@@ -1,0 +1,18 @@
+body{
+  margin: 0;
+  padding: 0;
+}
+html {
+  box-sizing: border-box;
+  min-width: 100vw;
+  min-height: 100vh;
+}
+
+#app {
+  margin: 0;
+  text-align: center;
+}
+*, *:before, *:after {
+   box-sizing: inherit;
+ }
+
