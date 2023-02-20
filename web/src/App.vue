@@ -31,10 +31,21 @@ const router=useRouter()
 <style scoped>
 .home {
 	display: grid;
-	grid-template-rows: 1fr;
 	grid-template-columns: 300px 1fr;
 	width: 100%;
 	height: 100%;
-	place-content: center;
+}
+ @media only screen and (max-width: 1228px) {
+	 .menu {
+		 display: none;
+	 }
+	 .home {
+		 display: flex;
+		 width: 100%;
+		 height: 100%;
+	 }
+ }
+.component {
+	width: 100%;
 }
 </style>

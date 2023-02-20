@@ -99,7 +99,7 @@ const enterGetOpenAI=(e)=>{
 				resize="none"
 				@keydown="enterGetOpenAI"
 				v-model="question"
-				style="width: 700px;height: 50px;margin-right: 12px;"
+				class="input"
 			/>
 			<el-button
 				@click="GetOpenAI"
@@ -147,7 +147,7 @@ const enterGetOpenAI=(e)=>{
 	white-space: pre-wrap;
 }
 .top{
-	padding: 16px 150px;
+	padding: 16px;
 	display: flex;
 	align-items: center;
 	height: auto;
@@ -165,6 +165,12 @@ const enterGetOpenAI=(e)=>{
 	border-radius: 10px;
 }
 
+.input {
+	width: 700px;
+	height: 50px;
+	margin-right: 12px;
+}
+
 .scrollbar::-webkit-scrollbar-thumb {
 	background-color: #7f7f7f;
 	border-radius: 10px;
@@ -179,5 +185,13 @@ const enterGetOpenAI=(e)=>{
 }
 .answer-right {
 	justify-content: right;
+}
+@media only screen and (max-width: 1228px) {
+	.answer-item {
+		padding: 16px 16px;
+	}
+	.input {
+		width: 70%;
+	}
 }
 </style>
