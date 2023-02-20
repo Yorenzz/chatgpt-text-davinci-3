@@ -2,6 +2,7 @@
 import { computed, nextTick, ref } from 'vue'
 import axios from 'axios'
 import config from './config/index.js'
+import { getAI } from './utils/api.js'
 
 const loading=ref(false)
 const ans=ref()
@@ -39,9 +40,7 @@ const GetOpenAI= async () => {
 		})
 	})
 	question.value=''
-	axios.post(`${config.baseApi}/chat`, {
-		question: context.value,
-	}).then(res=>{
+	getAI(context.value).then(res=>{
 		answer.value=res.data.choices[0].text
 		totalTokens.value=res.data.usage.total_tokens
 		answerArr.value.push(answer.value)
