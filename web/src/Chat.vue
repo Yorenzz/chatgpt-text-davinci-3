@@ -3,6 +3,7 @@ import { computed, nextTick, ref } from 'vue'
 import axios from 'axios'
 import config from './config/index.js'
 import { getAI } from './utils/api.js'
+import { ElMessage } from 'element-plus'
 
 const loading=ref(false)
 const ans=ref()
@@ -57,7 +58,8 @@ const GetOpenAI= async () => {
 		context.value=context.value.slice(5)
 		context.value=context.value.slice(context.value.indexOf('Human:'))
 		context.value=context.value.slice(0,context.value.lastIndexOf('Human:'))
-		GetOpenAI()
+		context.value&&GetOpenAI()
+		!context.value&&ElMessage.error('发生错误，请稍后重试')
 	}).finally(()=>{
 		isEnterDisabled.value=false
 		loading.value=false
