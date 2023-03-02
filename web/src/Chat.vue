@@ -1,8 +1,6 @@
 <script setup>
 import { computed, nextTick, ref } from 'vue'
-import axios from 'axios'
-import config from './config/index.js'
-import { getAI } from './utils/api.js'
+import { getAI, getAI2 } from './utils/api.js'
 import { ElMessage } from 'element-plus'
 
 const loading=ref(false)
@@ -11,7 +9,7 @@ const isEnterDisabled=ref(false)
 
 const question=ref('')
 const answer=ref('')
-const context=ref('')
+const context=ref([])
 const totalTokens=ref(0)
 
 const questionArr=ref([])
@@ -27,13 +25,15 @@ const contentArr=computed(()=>{
 	return arr
 })
 
-const GetOpenAI= async () => {
-	if(!question.value) return
-	isEnterDisabled.value=true
+const getOpenAI= async () => {
+	if (!question.value) return
+	isEnterDisabled.value = true
 	questionArr.value.push(question.value)
-	loading.value=true
-	context.value+=`Human:${ question.value }\nAI:`
-	console.log(context.value)
+	loading.value = true
+	context.value.push({
+		role: 'user',
+		content: question.value
+	})
 	await nextTick(() => {
 		ans.value.scrollTo({
 			top: ans.value.scrollHeight,
@@ -41,25 +41,26 @@ const GetOpenAI= async () => {
 		})
 	})
 	question.value=''
-	getAI(context.value).then(res=>{
-		answer.value=res.data.choices[0].text
-		totalTokens.value=res.data.usage.total_tokens
+	getAI2({
+			model: "gpt-3.5-turbo",
+			messages: context.value
+		}
+	).then(res => {
+		console.log('111', res.data.choices[0].message.content)
+		answer.value=res.data.choices[0].message.content
 		answerArr.value.push(answer.value)
-		context.value+=`${ answer.value }\n`
+		context.value.push(res.data.choices[0].message)
 		nextTick(()=>{
 			ans.value.scrollTo({
 				top: ans.value.scrollHeight,
 				behavior: 'smooth'
 			})
 		})
-	}).catch((err)=>{
-		console.warn(err.response.data)
-		questionArr.value.pop()
-		context.value=context.value.slice(5)
-		context.value=context.value.slice(context.value.indexOf('Human:'))
-		context.value=context.value.slice(0,context.value.lastIndexOf('Human:'))
-		context.value&&GetOpenAI()
-		!context.value&&ElMessage.error('发生错误，请稍后重试')
+	}).catch(e => {
+		console.warn(e)
+		context.value?.shift()
+		context.value?.shift()
+		ElMessage({message: '请重试',type:'error'})
 	}).finally(()=>{
 		isEnterDisabled.value=false
 		loading.value=false
@@ -70,7 +71,7 @@ const enterGetOpenAI=(e)=>{
 	if(e.keyCode===13){
 		e.preventDefault()
 		if(!isEnterDisabled.value){
-			GetOpenAI()
+			getOpenAI()
 		}
 	}
 }
@@ -81,7 +82,7 @@ const enterGetOpenAI=(e)=>{
 			<div
 				class="top"
 			>
-				这里是ChatGPT-text-davinci-003模型，请向我提问
+				这里是ChatGPT-gpt-3.5-turbo模型，请向我提问
 			</div>
 			<div
 				class="answer scrollbar" ref="ans"
@@ -104,7 +105,7 @@ const enterGetOpenAI=(e)=>{
 				class="input"
 			/>
 			<el-button
-				@click="GetOpenAI"
+				@click="getOpenAI"
 				:loading="loading"
 				style="height: 50px"
 			>

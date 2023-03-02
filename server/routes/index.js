@@ -17,15 +17,20 @@ router.get('/string', async (ctx, next) => {
 router.post('/chat', async (ctx, next) => {
   const { question } = ctx.request.body
   const openai = new OpenAIApi(configuration)
-  const response = await openai.createCompletion({
-    model: "text-davinci-003",
-    prompt: `${question}`,
-    max_tokens: 2048,
-    temperature: 0.7,
-    stop: [' Human:', ' AI:']
-  })
-  const res=response.data
-  ctx.body = res
+  console.log(question)
+  try {
+    const response = await openai.createCompletion({
+      model: "text-davinci-003",
+      prompt: `${question}`,
+      max_tokens: 2048,
+      temperature: 0.7,
+      stop: [' Human:', ' AI:']
+    })
+    const res=response.data
+    ctx.body = res
+  } catch (e){
+    console.warn(e)
+  }
 })
 
 module.exports = router
