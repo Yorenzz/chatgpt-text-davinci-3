@@ -28,8 +28,8 @@ router.post('/chat', async (ctx, next) => {
     })
     const res=response.data
     ctx.body = res
-  } catch (e){
-    console.warn(e)
+  } catch (err){
+    console.warn(err)
   }
 })
 
