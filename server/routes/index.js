@@ -19,10 +19,9 @@ router.post('/chat', async (ctx, next) => {
   const openai = new OpenAIApi(configuration)
   console.log(question)
   try {
-    const response = await openai.createCompletion({
+    const response = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
-      message: `${question}`,
-      max_tokens: 4096,
+      messages: question.messages,
       temperature: 0.7,
     })
     const res=response.data
