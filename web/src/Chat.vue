@@ -41,7 +41,7 @@ const getOpenAI= async () => {
 		})
 	})
 	question.value=''
-	getAI2({
+	getAI({
 			model: "gpt-3.5-turbo",
 			messages: context.value
 		}

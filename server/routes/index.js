@@ -20,11 +20,10 @@ router.post('/chat', async (ctx, next) => {
   console.log(question)
   try {
     const response = await openai.createCompletion({
-      model: "text-davinci-003",
-      prompt: `${question}`,
-      max_tokens: 2048,
+      model: "gpt-3.5-turbo",
+      message: `${question}`,
+      max_tokens: 4096,
       temperature: 0.7,
-      stop: [' Human:', ' AI:']
     })
     const res=response.data
     ctx.body = res
