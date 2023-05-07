@@ -45,8 +45,11 @@ router.post('/chatStream', async (ctx, next) => {
       messages: question.messages,
       temperature: 0.7,
       stream: true,
+    }, {
+      responseType: 'stream'
     })
-    stream.on('data', (response)=>{
+    console.log(stream)
+    stream.data.on('data', (response)=>{
       ctx.res.write(`data: ${ JSON.stringify(response) }\\n\\n\``)
     })
   } catch (err){
