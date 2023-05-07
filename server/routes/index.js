@@ -1,9 +1,10 @@
 const router = require('koa-router')()
 const { Configuration, OpenAIApi } = require("openai");
 const configuration = new Configuration({
-  apiKey: '',
+  apiKey: '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',
 });
 
+const openai = new OpenAIApi(configuration)
 router.get('/', async (ctx, next) => {
   await ctx.render('index', {
     title: 'Hello Koa 2!'
@@ -16,7 +17,6 @@ router.get('/string', async (ctx, next) => {
 
 router.post('/chat', async (ctx, next) => {
   const { question } = ctx.request.body
-  const openai = new OpenAIApi(configuration)
   console.log(question)
   try {
     const response = await openai.createChatCompletion({
@@ -33,17 +33,22 @@ router.post('/chat', async (ctx, next) => {
 
 router.post('/chatStream', async (ctx, next) => {
   const { question } = ctx.request.body
-  const openai = new OpenAIApi(configuration)
+  ctx.res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive'
+  })
   console.log(question)
   try {
-    const response = await openai.createChatCompletion({
+    const stream = openai.createChatCompletion({
       model: "gpt-3.5-turbo",
       messages: question.messages,
       temperature: 0.7,
       stream: true,
     })
-    const res=response.data
-    ctx.body = res
+    stream.on('data', (response)=>{
+      ctx.res.write(`data: ${ JSON.stringify(response) }\\n\\n\``)
+    })
   } catch (err){
     console.warn(err)
   }
