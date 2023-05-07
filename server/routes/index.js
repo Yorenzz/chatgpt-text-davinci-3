@@ -49,11 +49,19 @@ router.post('/chatStream', async (ctx, next) => {
       responseType: 'stream'
     })
     // console.log(stream)
-    stream.data.on('data', (response)=>{
-      ctx.res.write(`data: ${ JSON.stringify(response) }\\n\\n\``)
+    let ended = false
+
+    stream.data.on('data', (response) => {
+      if (!ended) {
+        ctx.res.write(`data: ${JSON.stringify(response)}\n\n`)
+      }
     })
+
     stream.data.on('close', () => {
-      ctx.res.end()
+      if (!ended) {
+        ctx.res.end()
+        ended = true
+      }
     })
   } catch (err){
     console.warn(err)
