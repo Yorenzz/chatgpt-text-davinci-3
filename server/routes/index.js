@@ -40,7 +40,7 @@ router.post('/chatStream', async (ctx, next) => {
   })
   console.log(question)
   try {
-    const stream = openai.createChatCompletion({
+    const stream = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
       messages: question.messages,
       temperature: 0.7,
