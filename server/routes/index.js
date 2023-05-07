@@ -33,12 +33,6 @@ router.post('/chat', async (ctx, next) => {
 
 router.post('/chatStream', async (ctx, next) => {
   const { question } = ctx.request.body
-  ctx.res.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    Connection: 'keep-alive'
-  })
-  console.log(question)
   try {
     const stream = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
@@ -48,15 +42,11 @@ router.post('/chatStream', async (ctx, next) => {
     }, {
       responseType: 'stream'
     })
-    console.log(stream)
-
-    stream.data.on('data', (response) => {
-        ctx.res.write(`data: ${JSON.stringify(response)}\n\n`)
+    ctx.set({
+      'Content-Type': 'text/plain',
+      'Transfer-Encoding': 'chunked'
     })
-
-    stream.data.on('close', () => {
-        ctx.res.end()
-    })
+    ctx.body = stream
   } catch (err){
     console.warn(err)
   }
