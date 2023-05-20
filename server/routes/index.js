@@ -31,7 +31,7 @@ router.post('/chat', async (ctx, next) => {
   }
 })
 
-router.get('/sseChat', async (ctx)=>{
+router.post('/sseChat', async (ctx)=>{
   ctx.status = 200
   ctx.req.socket.setTimeout(10000)
 
