@@ -1,7 +1,7 @@
 const router = require('koa-router')()
 const { Configuration, OpenAIApi } = require("openai");
 const configuration = new Configuration({
-  apiKey: '',
+  apiKey: process.GPT_KEY || '',
 });
 
 const openai = new OpenAIApi(configuration)
