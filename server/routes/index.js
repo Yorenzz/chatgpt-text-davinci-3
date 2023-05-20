@@ -3,7 +3,7 @@ const { Configuration, OpenAIApi } = require("openai");
 const configuration = new Configuration({
   apiKey: process.GPT_KEY || '',
 });
-
+console.log(process.GPT_KEY)
 const openai = new OpenAIApi(configuration)
 router.get('/', async (ctx, next) => {
   await ctx.render('index', {
