@@ -1,9 +1,8 @@
 const router = require('koa-router')()
 const { Configuration, OpenAIApi } = require("openai");
 const configuration = new Configuration({
-  apiKey: process.env.GPT_KEY || '',
+  apiKey: process.env.GPT_KEY || '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',
 });
-console.log(process.env.GPT_KEY)
 const openai = new OpenAIApi(configuration)
 router.get('/', async (ctx, next) => {
   await ctx.render('index', {
@@ -50,46 +49,32 @@ router.post('/chatStream', async (ctx, next) => {
   // } catch (err){
   //   console.warn(err)
   // }
+  const response = await openai.createChatCompletion({
+    model: "gpt-3.5-turbo",
+    messages: question.messages,
+    stream: true,
+  }, { responseType: 'stream' });
 
-  try {
-    const res = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo",
-      messages: question.messages,
-      temperature: 0.7,
-      stream: true,
-    }, { responseType: 'stream' });
+  const stream = response.data
 
-    res.data.on('data', data => {
-      const lines = data.toString().split('\n').filter(line => line.trim() !== '');
-      for (const line of lines) {
-        const message = line.replace(/^data: /, '');
-        if (message === '[DONE]') {
-          return; // Stream finished
-        }
+  stream.on('data', (chunk) => {
+    // Messages in the event stream are separated by a pair of newline characters.
+    const payloads = chunk.toString().split("\n\n")
+    for (const payload of payloads) {
+      if (payload.includes('[DONE]')) return;
+      if (payload.startsWith("data:")) {
+        const data = payload.replaceAll(/(\n)?^data:\s*/g, ''); // in case there's multiline data event
         try {
-          const parsed = JSON.parse(message);
-          console.log(parsed.choices[0].text);
-        } catch(error) {
-          console.error('Could not JSON parse stream message', message, error);
+          const delta = JSON.parse(data.trim())
+          console.log(delta.choices[0].delta?.content)
+        } catch (error) {
+          console.log(`Error with JSON.parse and ${payload}.\n${error}`)
         }
       }
-    });
-  } catch (error) {
-    if (error.response?.status) {
-      console.error(error.response.status, error.message);
-      error.response.data.on('data', data => {
-        const message = data.toString();
-        try {
-          const parsed = JSON.parse(message);
-          console.error('An error occurred during OpenAI request: ', parsed);
-        } catch(error) {
-          console.error('An error occurred during OpenAI request: ', message);
-        }
-      });
-    } else {
-      console.error('An error occurred during OpenAI request', error);
     }
-  }
+  })
+  stream.on('end', () => console.log('Stream done'))
+  stream.on('error', (e) => console.error(e))
 })
 
 
