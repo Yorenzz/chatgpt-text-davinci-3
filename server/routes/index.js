@@ -32,6 +32,7 @@ router.post('/chat', async (ctx, next) => {
 })
 
 router.post('/sseChat', async (ctx)=>{
+  const { question } = ctx.request.body
   ctx.status = 200
   ctx.req.socket.setTimeout(10000)
 
