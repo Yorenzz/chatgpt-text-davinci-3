@@ -33,61 +33,64 @@ router.post('/chat', async (ctx, next) => {
 
 router.post('/chatStream', async (ctx, next) => {
   const { question } = ctx.request.body
+  // try {
+  //   const stream = await openai.createChatCompletion({
+  //     model: "gpt-3.5-turbo",
+  //     messages: question.messages,
+  //     temperature: 0.7,
+  //     stream: true,
+  //   }, {
+  //     responseType: 'stream'
+  //   })
+  //   ctx.set({
+  //     'Content-Type': 'text/plain',
+  //     'Transfer-Encoding': 'chunked'
+  //   })
+  //   ctx.body = stream
+  // } catch (err){
+  //   console.warn(err)
+  // }
+
   try {
-    const stream = await openai.createChatCompletion({
+    const res = await openai.createCompletion({
       model: "gpt-3.5-turbo",
       messages: question.messages,
       temperature: 0.7,
       stream: true,
-    }, {
-      responseType: 'stream'
-    })
-    ctx.set({
-      'Content-Type': 'text/plain',
-      'Transfer-Encoding': 'chunked'
-    })
-    ctx.body = stream
-  } catch (err){
-    console.warn(err)
+    }, { responseType: 'stream' });
+
+    res.data.on('data', data => {
+      const lines = data.toString().split('\n').filter(line => line.trim() !== '');
+      for (const line of lines) {
+        const message = line.replace(/^data: /, '');
+        if (message === '[DONE]') {
+          return; // Stream finished
+        }
+        try {
+          const parsed = JSON.parse(message);
+          console.log(parsed.choices[0].text);
+        } catch(error) {
+          console.error('Could not JSON parse stream message', message, error);
+        }
+      }
+    });
+  } catch (error) {
+    if (error.response?.status) {
+      console.error(error.response.status, error.message);
+      error.response.data.on('data', data => {
+        const message = data.toString();
+        try {
+          const parsed = JSON.parse(message);
+          console.error('An error occurred during OpenAI request: ', parsed);
+        } catch(error) {
+          console.error('An error occurred during OpenAI request: ', message);
+        }
+      });
+    } else {
+      console.error('An error occurred during OpenAI request', error);
+    }
   }
 })
 
-
-// name: 'StreamingExample',
-//     data() {
-//   return {
-//     openaiApiKey: 'YOUR_API_KEY',
-//     apiUrl: 'https://api.openai.com/v1/engines/davinci/completions',
-//     requestOptions: {
-//       headers: {
-//         'Content-Type': 'application/json',
-//         Authorization: `Bearer ${this.openaiApiKey}`,
-//       },
-//       responseType: 'stream',
-//     },
-//     requestData: {
-//       model: 'text-davinci-002',
-//       prompt: 'Hello,',
-//       temperature: 0.5,
-//     },
-//     responseData: '',
-//     streamSource: null,
-//   };
-// },
-// methods: {
-//   startStreaming() {
-//     this.streamSource = axios.post(this.apiUrl, this.requestData, this.requestOptions);
-//     this.streamSource.data.on('data', (chunk) => {
-//       this.responseData += chunk;
-//     });
-//   },
-//   stopStreaming() {
-//     if (this.streamSource) {
-//       this.streamSource.cancel();
-//       this.streamSource = null;
-//     }
-//   },
-// },
-// };
 
 module.exports = router
