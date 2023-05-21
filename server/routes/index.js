@@ -56,7 +56,7 @@ ws.on('connection', (ws)=> {
             try {
               const delta = JSON.parse(data.trim())
               console.log(delta.choices[0].delta?.content)
-              ws.send('test reponse', delta.choices[0].delta?.content)
+              ws.send(delta.choices[0].delta?.content)
             } catch (error) {
               console.log(`Error with JSON.parse and ${ payload }.\n${ error }`)
             }
