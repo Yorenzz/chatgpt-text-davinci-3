@@ -5,7 +5,7 @@ const configuration = new Configuration({
 });
 const webSocket = require('ws')
 
-const ws = new WebSocket.Server({port: 3000})
+const ws = new webSocket.Server({port: 3000})
 const openai = new OpenAIApi(configuration)
 router.get('/', async (ctx, next) => {
   await ctx.render('index', {
@@ -35,9 +35,39 @@ router.post('/chat', async (ctx, next) => {
 
 ws.on('connection', (ws)=> {
   console.log('ws open')
-  ws.on('message', (message) => {
-    console.log('received', message)
-    ws.send('test reponse')
+  ws.on('message', async (message) => {
+    console.log('received', JSON.parse(message))
+    try {
+      const response = await openai.createChatCompletion({
+        model: 'gpt-3.5-turbo',
+        messages: JSON.parse(message),
+        stream: true
+      }, { responseType: 'stream' })
+
+      const stream = response.data
+
+      stream.on('data', (chunk) => {
+        // Messages in the event stream are separated by a pair of newline characters.
+        const payloads = chunk.toString().split("\n\n")
+        for (const payload of payloads) {
+          if (payload.includes('[DONE]')) return;
+          if (payload.startsWith("data:")) {
+            const data = payload.replaceAll(/(\n)?^data:\s*/g, ''); // in case there's multiline data event
+            try {
+              const delta = JSON.parse(data.trim())
+              console.log(delta.choices[0].delta?.content)
+              ws.send('test reponse', delta.choices[0].delta?.content)
+            } catch (error) {
+              console.log(`Error with JSON.parse and ${ payload }.\n${ error }`)
+            }
+          }
+        }
+      })
+      stream.on('end', () => console.log('Stream done'))
+      stream.on('error', (e) => console.error(e))
+    } catch (e) {
+      console.warn(e)
+    }
   })
 })
 
