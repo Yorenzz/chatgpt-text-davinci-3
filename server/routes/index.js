@@ -37,6 +37,7 @@ ws.on('connection', (ws)=> {
   console.log('ws open')
   ws.on('message', async (message) => {
     console.log('received', JSON.parse(message))
+    ws.send('start')
     try {
       const response = await openai.createChatCompletion({
         model: 'gpt-3.5-turbo',
