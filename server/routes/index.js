@@ -48,7 +48,6 @@ ws.on('connection', (ws)=> {
       const stream = response.data
 
       stream.on('data', (chunk) => {
-        // Messages in the event stream are separated by a pair of newline characters.
         const payloads = chunk.toString().split("\n\n")
         for (const payload of payloads) {
           if (payload.includes('[DONE]')) return;
@@ -64,7 +63,10 @@ ws.on('connection', (ws)=> {
           }
         }
       })
-      stream.on('end', () => console.log('Stream done'))
+      stream.on('end', () => {
+        console.log('Stream done')
+        ws.send('end')
+      })
       stream.on('error', (e) => console.error(e))
     } catch (e) {
       console.warn(e)
