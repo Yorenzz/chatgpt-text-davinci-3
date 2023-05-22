@@ -1,6 +1,5 @@
 <script setup>
-import { computed, nextTick, ref } from 'vue'
-import { getAI, getAI2, getAIStream } from './utils/api.js'
+import { computed, nextTick, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 // import config from '../config/index.js'
 
@@ -125,6 +124,12 @@ const enterGetOpenAI=(e)=>{
 		}
 	}
 }
+
+watch(()=>contentArr.value, (val)=>{
+	nextTick(() => {
+		ans.value.scrollTop = ans.value.scrollHeight;
+	});
+})
 </script>
 
 <template>
