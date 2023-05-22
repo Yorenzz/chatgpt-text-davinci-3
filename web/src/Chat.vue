@@ -43,15 +43,16 @@ ws.onmessage = async (event) => {
 			})
 			loading.value = false
 			isEnterDisabled.value=false
+			nextTick(() => {
+				Prism.highlightAll()
+			})
 			return
 		}
 		answer.value = answer.value + event.data
 		answerArr.value[answerArr.value.length - 1] = answer.value
-		await nextTick(() => {
-			ans.value.scrollTo({
-				top: ans.value.scrollHeight,
-				behavior: 'smooth'
-			})
+		
+		nextTick(() => {
+			Prism.highlightAll()
 		})
 	}
 }
@@ -148,7 +149,14 @@ watch(()=>contentArr.value, (val)=>{
 					class="answer-item"
 					:class="[index%2===0?'answer-right':'answer-left']"
 				>
-					{{ item }}
+					<VueShowdown
+						v-if="index%2!==0"
+						:markdown="item"
+						flavor="vanilla"
+						:options="{ emoji: true }"
+						tag="span"
+					/>
+					<span v-else>{{ item }}</span>
 				</div>
 			</div>
 		<div class="question">
