@@ -1,4 +1,4 @@
-import request, { ser } from './request.js'
+import request from './request.js'
 
 export const getAI=(question)=>{
 	return request({
@@ -7,10 +7,11 @@ export const getAI=(question)=>{
 		data: {question},
 	})
 }
-export const getAI2=(question)=>{
-	return ser({
-		method: 'POST',
-		url: 'https://api.openai.com/v1/chat/completions',
-		data: question,
+export const getAIStream=(question)=>{
+	return request({
+		method: 'post',
+		url: '/wsChat',
+		data: {question},
+		responseType: 'stream',
 	})
 }

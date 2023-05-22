@@ -1,7 +1,8 @@
 <script setup>
 import { computed, nextTick, ref } from 'vue'
-import { getAI, getAI2 } from './utils/api.js'
+import { getAI, getAI2, getAIStream } from './utils/api.js'
 import { ElMessage } from 'element-plus'
+// import config from '../config/index.js'
 
 const loading=ref(false)
 const ans=ref()
@@ -25,53 +26,102 @@ const contentArr=computed(()=>{
 	return arr
 })
 
-const getOpenAI= async () => {
-	if (!question.value) return
-	isEnterDisabled.value = true
-	questionArr.value.push(question.value)
-	loading.value = true
-	context.value.push({
-		role: 'user',
-		content: question.value
-	})
-	await nextTick(() => {
-		ans.value.scrollTo({
-			top: ans.value.scrollHeight,
-			behavior: 'smooth'
-		})
-	})
-	question.value=''
-	getAI({
-			model: "gpt-3.5-turbo",
-			messages: context.value
-		}
-	).then(res => {
-		console.log('111', res.data.choices[0].message.content)
-		answer.value=res.data.choices[0].message.content
+const ws = new WebSocket(`ws://54.79.221.81:3000`)
+ws.onopen = () => {
+	console.log('opended')
+}
+ws.onmessage = async (event) => {
+	if (event.data === 'start') {
 		answerArr.value.push(answer.value)
-		context.value.push(res.data.choices[0].message)
-		nextTick(()=>{
+	} else {
+		if (event.data instanceof Blob) {
+			return
+		}
+		if (event.data === 'end') {
+			context.value.push({
+				role: 'assistant',
+				content: answer.value
+			})
+			loading.value = false
+			isEnterDisabled.value=false
+			return
+		}
+		answer.value = answer.value + event.data
+		answerArr.value[answerArr.value.length - 1] = answer.value
+		await nextTick(() => {
 			ans.value.scrollTo({
 				top: ans.value.scrollHeight,
 				behavior: 'smooth'
 			})
 		})
-	}).catch(e => {
-		console.warn(e)
-		context.value?.shift()
-		context.value?.shift()
-		ElMessage({message: '请重试',type:'error'})
-	}).finally(()=>{
-		isEnterDisabled.value=false
-		loading.value=false
+	}
+}
+// const getOpenAI= async () => {
+// 	if (!question.value) return
+// 	isEnterDisabled.value = true
+// 	questionArr.value.push(question.value)
+// 	loading.value = true
+// 	context.value.push({
+// 		role: 'user',
+// 		content: question.value
+// 	})
+// 	await nextTick(() => {
+// 		ans.value.scrollTo({
+// 			top: ans.value.scrollHeight,
+// 			behavior: 'smooth'
+// 		})
+// 	})
+// 	question.value=''
+// 	getAI({
+// 			model: "gpt-3.5-turbo",
+// 			messages: context.value
+// 		}
+// 	).then(res => {
+// 		console.log('111', res.data.choices[0].message.content)
+// 		answer.value=res.data.choices[0].message.content
+// 		answerArr.value.push(answer.value)
+// 		context.value.push(res.data.choices[0].message)
+// 		nextTick(()=>{
+// 			ans.value.scrollTo({
+// 				top: ans.value.scrollHeight,
+// 				behavior: 'smooth'
+// 			})
+// 		})
+// 	}).catch(e => {
+// 		console.warn(e)
+// 		answerArr.value.push('')
+// 		context.value.push({content: '', role: 'assistant'})
+// 		ElMessage({message: '请重试',type:'error'})
+// 	}).finally(()=>{
+// 		isEnterDisabled.value=false
+// 		loading.value=false
+// 	})
+// }
+
+const getAIFromStream = async () => {
+	if (!question.value) return
+	loading.value = true
+	answer.value = ''
+	isEnterDisabled.value = true
+	questionArr.value.push(question.value)
+	// loading.value = true
+	context.value.push({
+		role: 'user',
+		content: question.value
 	})
+	await nextTick(() => {
+		ans.value.scrollTop = ans.value.scrollHeight
+	})
+	
+	question.value = ''
+	ws.send(JSON.stringify(context.value))
 }
 
 const enterGetOpenAI=(e)=>{
 	if(e.keyCode===13){
 		e.preventDefault()
 		if(!isEnterDisabled.value){
-			getOpenAI()
+			getAIFromStream()
 		}
 	}
 }
@@ -82,7 +132,7 @@ const enterGetOpenAI=(e)=>{
 			<div
 				class="top"
 			>
-				这里是ChatGPT-gpt-3.5-turbo模型，请向我提问
+				这里是GPT-3.5-turbo模型，请向我提问
 			</div>
 			<div
 				class="answer scrollbar" ref="ans"
@@ -91,21 +141,23 @@ const enterGetOpenAI=(e)=>{
 					v-for="(item,index) in contentArr"
 					:key="index"
 					class="answer-item"
-					:class="[index%2===0?'answer-left':'answer-right']"
+					:class="[index%2===0?'answer-right':'answer-left']"
 				>
 					{{ item }}
 				</div>
 			</div>
 		<div class="question">
 			<el-input
+				autofocus
 				type="textarea"
 				resize="none"
+				:autosize="{ minRows: 2, maxRows: 3 }"
 				@keydown="enterGetOpenAI"
 				v-model="question"
 				class="input"
 			/>
 			<el-button
-				@click="getOpenAI"
+				@click="getAIFromStream"
 				:loading="loading"
 				style="height: 50px"
 			>
@@ -127,7 +179,8 @@ const enterGetOpenAI=(e)=>{
 }
 .question {
 	width: 100%;
-	height: 100px;
+	min-height: 100px;
+	height: fit-content;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -185,9 +238,11 @@ const enterGetOpenAI=(e)=>{
 }
 .answer-left {
 	justify-content: left;
+	text-align: left;
 }
 .answer-right {
 	justify-content: right;
+	text-align: right;
 }
 @media only screen and (max-width: 1228px) {
 	.answer-item {
