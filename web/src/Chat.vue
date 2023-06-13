@@ -114,7 +114,15 @@ const getAIFromStream = async () => {
 	})
 	
 	question.value = ''
-	ws.send(JSON.stringify(context.value))
+	const handleSend = () => {
+		if (ws.readyState === WebSocket.OPEN) {
+			ws.send(JSON.stringify(context.value))
+		} else {
+			// Queue a retry
+			setTimeout(() => { handleSend() }, 1000)
+		}
+	}
+	handleSend()
 }
 
 const enterGetOpenAI=(e)=>{
