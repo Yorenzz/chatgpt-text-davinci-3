@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 // import config from '../config/index.js'
 
@@ -130,6 +130,10 @@ watch(()=>contentArr.value, (val)=>{
 	nextTick(() => {
 		ans.value.scrollTop = ans.value.scrollHeight;
 	});
+})
+
+onUnmounted(()=>{
+	ws.close()
 })
 </script>
 
