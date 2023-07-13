@@ -17,13 +17,13 @@ const router=useRouter()
 				<el-icon><ChatDotSquare /></el-icon>
 				<span>对话</span>
 			</el-menu-item>
-			<el-menu-item index="2" disabled>
+			<el-menu-item index="2" @click="router.push('/image')">
 				<el-icon><Picture /></el-icon>
 				<span>AI图片</span>
 			</el-menu-item>
 		</el-menu>
 		<div class="component">
-			<Chat />
+			<router-view />
 		</div>
 	</div>
 </template>

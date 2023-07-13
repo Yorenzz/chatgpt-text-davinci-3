@@ -8,6 +8,11 @@ const routes = [
 		component: () => import('../Chat.vue'),
 	},
 	{
+		path: '/image',
+		name: 'image',
+		component: () => import('../Image.vue'),
+	},
+	{
 		path: '/:pathMatch(.*)',
 		redirect: '/chat',
 	},
