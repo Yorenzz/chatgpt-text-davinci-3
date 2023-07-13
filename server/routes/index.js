@@ -1,8 +1,8 @@
 const router = require('koa-router')()
 const { Configuration, OpenAIApi } = require("openai");
 const configuration = new Configuration({
-  // apiKey: process.env.GPT_KEY,
-  apiKey: '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',
+  apiKey: process.env.GPT_KEY,
+  // apiKey: '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',
 })
 const webSocket = require('ws')
 
