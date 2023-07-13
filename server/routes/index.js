@@ -1,8 +1,7 @@
 const router = require('koa-router')()
 const { Configuration, OpenAIApi } = require("openai");
 const configuration = new Configuration({
-  apiKey: process.env.GPT_KEY,
-  // apiKey: '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',
+  apiKey: process.env.GPT_KEY
 })
 const webSocket = require('ws')
 
@@ -28,6 +27,7 @@ router.post('/image', async (ctx, next)=>{
       size: "1024x1024",
     })
     console.log(response.data)
+    ctx.body = response.data.data[0]
   } catch (e) {
     console.warn(e)
   }
