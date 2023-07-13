@@ -1,7 +1,26 @@
 <script setup>
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
+import { marked } from 'marked'
+import { markedHighlight } from "marked-highlight";
 import { ElMessage } from 'element-plus'
-// import config from '../config/index.js'
+
+marked.setOptions({
+  renderer: new marked.Renderer(),
+  gfm: true,
+  tables: true,
+  mangle: false,
+  breaks: true,
+  pedantic: false,
+  sanitize: false,
+  smartLists: true,
+  smartypants: false,
+  headerIds: false,
+})
+marked.use(markedHighlight({
+  langPrefix: 'line-numbers language-',
+  highlight(code, lang) {
+  }
+}))
 
 const loading=ref(false)
 const ans=ref()
@@ -18,8 +37,8 @@ const answerArr=ref([])
 const contentArr=computed(()=>{
 	const arr=[]
 	questionArr.value.map((item,index)=>{
-		arr.push(item)
-		arr.push(answerArr.value[index])
+		arr.push(marked.parse(item||''))
+		arr.push(marked.parse(answerArr.value[index]||''))
 		return item
 	})
 	return arr
@@ -28,6 +47,10 @@ const contentArr=computed(()=>{
 const ws = new WebSocket(`ws://54.79.221.81:3000`)
 ws.onopen = () => {
 	console.log('opended')
+}
+ws.onerror = (err) => {
+  console.log(err, '链接失败')
+  ElMessage.error('连接失败，请刷新网页重试')
 }
 ws.onmessage = async (event) => {
 	if (event.data === 'start') {
@@ -43,60 +66,15 @@ ws.onmessage = async (event) => {
 			})
 			loading.value = false
 			isEnterDisabled.value=false
-			nextTick(() => {
-				Prism.highlightAll()
-			})
 			return
 		}
 		answer.value = answer.value + event.data
 		answerArr.value[answerArr.value.length - 1] = answer.value
-		
-		nextTick(() => {
-			Prism.highlightAll()
-		})
 	}
+  nextTick(() => {
+    Prism.highlightAll()
+  })
 }
-// const getOpenAI= async () => {
-// 	if (!question.value) return
-// 	isEnterDisabled.value = true
-// 	questionArr.value.push(question.value)
-// 	loading.value = true
-// 	context.value.push({
-// 		role: 'user',
-// 		content: question.value
-// 	})
-// 	await nextTick(() => {
-// 		ans.value.scrollTo({
-// 			top: ans.value.scrollHeight,
-// 			behavior: 'smooth'
-// 		})
-// 	})
-// 	question.value=''
-// 	getAI({
-// 			model: "gpt-3.5-turbo",
-// 			messages: context.value
-// 		}
-// 	).then(res => {
-// 		console.log('111', res.data.choices[0].message.content)
-// 		answer.value=res.data.choices[0].message.content
-// 		answerArr.value.push(answer.value)
-// 		context.value.push(res.data.choices[0].message)
-// 		nextTick(()=>{
-// 			ans.value.scrollTo({
-// 				top: ans.value.scrollHeight,
-// 				behavior: 'smooth'
-// 			})
-// 		})
-// 	}).catch(e => {
-// 		console.warn(e)
-// 		answerArr.value.push('')
-// 		context.value.push({content: '', role: 'assistant'})
-// 		ElMessage({message: '请重试',type:'error'})
-// 	}).finally(()=>{
-// 		isEnterDisabled.value=false
-// 		loading.value=false
-// 	})
-// }
 
 const getAIFromStream = async () => {
 	if (!question.value) return
@@ -150,7 +128,7 @@ onUnmounted(()=>{
 			<div
 				class="top"
 			>
-				这里是GPT-3.5-turbo模型，请向我提问
+        使用GPT-3.5-turbo-16k-0613模型
 			</div>
 			<div
 				class="answer scrollbar" ref="ans"
@@ -160,15 +138,8 @@ onUnmounted(()=>{
 					:key="index"
 					class="answer-item"
 					:class="[index%2===0?'answer-right':'answer-left']"
+          v-html="item"
 				>
-					<VueShowdown
-						v-if="index%2!==0"
-						:markdown="item"
-						flavor="vanilla"
-						:options="{ emoji: true }"
-						tag="span"
-					/>
-					<span v-else>{{ item }}</span>
 				</div>
 			</div>
 		<div class="question">
@@ -222,7 +193,8 @@ onUnmounted(()=>{
 .answer-item {
 	padding: 16px 150px;
 	display: flex;
-	align-items: center;
+  flex-direction: column;
+	justify-content: center;
 	height: auto;
 	border: #eee 1px solid;
 	white-space: pre-wrap;
@@ -262,11 +234,11 @@ onUnmounted(()=>{
 	border-radius: 10px;
 }
 .answer-left {
-	justify-content: left;
+	align-items: flex-start;
 	text-align: left;
 }
 .answer-right {
-	justify-content: right;
+	align-items: flex-end;
 	text-align: right;
 }
 @media only screen and (max-width: 1228px) {
