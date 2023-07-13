@@ -1,7 +1,8 @@
 const router = require('koa-router')()
 const { Configuration, OpenAIApi } = require("openai");
 const configuration = new Configuration({
-  apiKey: process.env.GPT_KEY,
+  // apiKey: process.env.GPT_KEY,
+  apiKey: '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',
 })
 const webSocket = require('ws')
 
@@ -15,6 +16,21 @@ router.get('/', async (ctx, next) => {
 
 router.get('/string', async (ctx, next) => {
   ctx.body = 'koa2 string'
+})
+
+router.post('/image', async (ctx, next)=>{
+  const { keyword } = ctx.request.body
+  console.log(keyword)
+  try {
+    const response = await openai.createImage({
+      prompt: keyword,
+      n: 1,
+      size: "1024x1024",
+    })
+    console.log(response.data)
+  } catch (e) {
+    console.warn(e)
+  }
 })
 
 router.post('/chat', async (ctx, next) => {
