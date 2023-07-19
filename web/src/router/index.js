@@ -13,6 +13,11 @@ const routes = [
 		component: () => import('../Image.vue'),
 	},
 	{
+		path: '/record',
+		name: 'record',
+		component: () => import('../Recorder.vue'),
+	},
+	{
 		path: '/:pathMatch(.*)',
 		redirect: '/chat',
 	},

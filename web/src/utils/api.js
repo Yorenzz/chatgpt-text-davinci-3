@@ -7,3 +7,15 @@ export const getAIImage=(keyword)=>{
 		data: {keyword},
 	})
 }
+
+export const getRecorderTranslate = (file) => {
+	console.log(file)
+	return request({
+		method: 'POST',
+		url: '/recordTranslate',
+		data: {file},
+		headers: {
+			'Content-Type': 'multipart/form-data'
+		},
+	})
+}
