@@ -17,6 +17,12 @@ router.get('/string', async (ctx, next) => {
   ctx.body = 'koa2 string'
 })
 
+router.post('/recordTranslate', async (ctx, next) => {
+  const { file } = ctx.request
+  console.log(file)
+  ctx.body = 'success'
+})
+
 router.post('/image', async (ctx, next)=>{
   const { keyword } = ctx.request.body
   console.log(keyword)
