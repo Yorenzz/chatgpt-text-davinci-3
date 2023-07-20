@@ -18,7 +18,7 @@ router.get('/string', async (ctx, next) => {
 })
 
 router.post('/recordTranslate', async (ctx, next) => {
-  const file = ctx.request.file
+  const file = ctx.request
   console.log(file)
   ctx.body = 'success'
 })
