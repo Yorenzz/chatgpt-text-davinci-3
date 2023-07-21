@@ -1,9 +1,11 @@
 const router = require('koa-router')()
 const { Configuration, OpenAIApi } = require("openai");
+const { Readable } = require('stream');
 const configuration = new Configuration({
   apiKey: process.env.GPT_KEY
 })
 const webSocket = require('ws')
+const {createReadStream, readFileSync} = require("fs");
 
 const ws = new webSocket.Server({port: 3000})
 const openai = new OpenAIApi(configuration)
@@ -18,9 +20,22 @@ router.get('/string', async (ctx, next) => {
 })
 
 router.post('/recordTranslate', async (ctx, next) => {
-  const file = ctx.request
-  console.log(file)
-  ctx.body = 'success'
+  const file = ctx.request.files.file
+  // console.log(file)
+  const bufferData = readFileSync(file.filepath);
+
+  const readableStreamFromBlob = new Readable({
+    read() {
+      this.push(bufferData);
+      this.push(null); // 结束流
+    },
+  })
+  const res = await openai.createTranscription(
+    readableStreamFromBlob,
+    "whisper-1"
+  )
+  console.log(res)
+  ctx.body = res
 })
 
 router.post('/image', async (ctx, next)=>{

@@ -6,6 +6,7 @@ const onerror = require('koa-onerror')
 const bodyparser = require('koa-bodyparser')
 const logger = require('koa-logger')
 const cors = require('koa2-cors')
+const {koaBody} = require('koa-body')
 
 const index = require('./routes/index')
 
@@ -14,10 +15,11 @@ onerror(app)
 
 app.use(cors())
 // middlewares
-app.use(bodyparser({
-  enableTypes:['json', 'form', 'text', 'multipart'],
-  jsonStrict: false,
-}))
+app.use(
+  koaBody({
+    multipart: true,
+  }),
+)
 app.use(json())
 app.use(logger())
 app.use(require('koa-static')(__dirname + '/public'))
