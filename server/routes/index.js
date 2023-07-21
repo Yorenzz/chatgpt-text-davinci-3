@@ -31,7 +31,7 @@ router.post('/recordTranslate', async (ctx, next) => {
     },
   })
   const res = await openai.createTranscription(
-    readableStreamFromBlob,
+    createReadStream(file.filepath),
     "whisper-1"
   )
   console.log(res)
