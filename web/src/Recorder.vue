@@ -94,15 +94,15 @@ const uploadRecord = () => {
   const formData = new FormData()
   const blob = recorder.value.getWAVBlob()// 获取wav格式音频数据
   console.log(blob)
-  getRecorderTranslate(blob).then(res=>{
+  // 此处获取到blob对象后需要设置fileName满足当前项目上传需求，其它项目可直接传把blob作为file塞入formData
+  const newBlob = new Blob([blob], { type: 'audio/wav' })
+  const fileOfBlob = new File([newBlob], new Date().getTime() + '.wav')
+  formData.append('file', blob)
+  getRecorderTranslate(formData).then(res=>{
     console.log(res.data)
   }).catch(err=>{
     console.warn(err)
   })
-  // 此处获取到blob对象后需要设置fileName满足当前项目上传需求，其它项目可直接传把blob作为file塞入formData
-  const newBlob = new Blob([blob], { type: 'audio/wav' })
-  const fileOfBlob = new File([newBlob], new Date().getTime() + '.wav')
-  formData.append('file', fileOfBlob)
   const url = window.URL.createObjectURL(fileOfBlob)
   console.log(url)
 }

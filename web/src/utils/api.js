@@ -13,7 +13,7 @@ export const getRecorderTranslate = (file) => {
 	return request({
 		method: 'POST',
 		url: '/recordTranslate',
-		data: {file},
+		data: file,
 		headers: {
 			'Content-Type': 'multipart/form-data'
 		},
