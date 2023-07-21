@@ -63,16 +63,21 @@ const getImage = () => {
    grid-column-gap: 48px;
  }
 
+
+ .img {
+   width: 80vh;
+   height: 80vh;
+ }
+
  @media only screen and (max-width: 480px) {
    .ai-image {
      grid-template-rows: 2fr 1fr;
      grid-template-columns: none;
    }
- }
-
- .img {
-   width: 80vh;
-   height: 80vh;
+   .img {
+     width: auto;
+     height: auto;
+   }
  }
  .img-show {
    border: 1px solid #7f7f7f;
