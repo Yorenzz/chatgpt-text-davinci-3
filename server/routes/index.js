@@ -5,7 +5,7 @@ const configuration = new Configuration({
   apiKey: process.env.GPT_KEY
 })
 const webSocket = require('ws')
-const {createReadStream, readFileSync, readFileSync, writeFileSync} = require("fs");
+const {createReadStream, readFileSync, writeFileSync} = require("fs");
 const {resolve, join} = require("path");
 
 const ws = new webSocket.Server({port: 3000})
