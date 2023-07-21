@@ -28,7 +28,7 @@ router.post('/recordTranslate', async (ctx, next) => {
   const fileObj = readFileSync(file.filepath)
   const excelPath = resolve('./upload')
   writeFileSync(join(excelPath, fileName), fileObj)
-  const res = await openai.createTranscription(
+  const res = await openai.createTranslation(
     createReadStream(join(excelPath, fileName)),
     "whisper-1"
   )
