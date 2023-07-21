@@ -5,7 +5,8 @@ const configuration = new Configuration({
   apiKey: process.env.GPT_KEY
 })
 const webSocket = require('ws')
-const {createReadStream, readFileSync} = require("fs");
+const {createReadStream, readFileSync, readFileSync, writeFileSync} = require("fs");
+const {resolve, join} = require("path");
 
 const ws = new webSocket.Server({port: 3000})
 const openai = new OpenAIApi(configuration)
@@ -20,18 +21,15 @@ router.get('/string', async (ctx, next) => {
 })
 
 router.post('/recordTranslate', async (ctx, next) => {
-  const file = ctx.request.files.file
   // console.log(file)
-  const bufferData = readFileSync(file.filepath);
-
-  const readableStreamFromBlob = new Readable({
-    read() {
-      this.push(bufferData);
-      this.push(null); // 结束流
-    },
-  })
+  const file = ctx.request.files.file // 获取上传文件
+  // file包含了文件名，文件类型，大小，路径等信息
+  const fileName = file.originalFilename
+  const fileObj = readFileSync(file.filepath)
+  const excelPath = resolve('./upload')
+  writeFileSync(join(excelPath, fileName), fileObj)
   const res = await openai.createTranscription(
-    createReadStream(file.filepath),
+    createReadStream(join(excelPath, fileName)),
     "whisper-1"
   )
   console.log(res)
