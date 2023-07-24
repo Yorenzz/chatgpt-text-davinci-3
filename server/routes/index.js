@@ -26,7 +26,7 @@ router.post('/recordTranslate', async (ctx, next) => {
   console.log(typeof fileObj, fileObj)
   // file包含了文件名，文件类型，大小，路径等信息
   const res = await openai.createTranslation(
-    fileObj.stream()
+    '/blob'
   )
   console.log(res)
   ctx.body = res
