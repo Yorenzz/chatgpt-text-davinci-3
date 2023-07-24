@@ -22,15 +22,11 @@ router.get('/string', async (ctx, next) => {
 
 router.post('/recordTranslate', async (ctx, next) => {
   // console.log(file)
-  const file = ctx.request.files.file // 获取上传文件
+  const fileObj = ctx.request.files.file // 获取上传文件
   // file包含了文件名，文件类型，大小，路径等信息
-  const fileName = file.originalFilename
-  const fileObj = readFileSync(file.filepath)
-  const excelPath = resolve('./upload')
-  writeFileSync(join(excelPath, fileName), fileObj)
+
   const res = await openai.createTranslation(
-    createReadStream(join(excelPath, fileName)),
-    "whisper-1"
+    Readable.from(fileObj)
   )
   console.log(res)
   ctx.body = res
