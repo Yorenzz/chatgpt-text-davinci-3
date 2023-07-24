@@ -24,10 +24,8 @@ router.post('/recordTranslate', async (ctx, next) => {
   // console.log(file)
   const fileObj = ctx.request.files.file // 获取上传文件
   // file包含了文件名，文件类型，大小，路径等信息
-  const reader = new FileReader();
-  const readableStream = reader.readAsArrayBuffer(fileObj)
   const res = await openai.createTranslation(
-    readableStream
+    fileObj.stream()
   )
   console.log(res)
   ctx.body = res
