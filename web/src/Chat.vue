@@ -135,7 +135,7 @@ onUnmounted(() => {
     <div
       class="top"
     >
-      使用GPT-3.5-turbo-16k-0613模型
+      使用gpt-3.5-turbo-1106模型
     </div>
     <div
       ref="ans"
