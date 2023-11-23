@@ -69,6 +69,12 @@ ws.onmessage = async (event) => {
 			isEnterDisabled.value = false
 			return
 		}
+		if (event.data === 'error') {
+			loading.value = false
+			isEnterDisabled.value = false
+			ElMessage.error('oops，出了点问题，请刷新页面或稍后重试')
+			return
+		}
 		answer.value = answer.value + event.data
 		answerArr.value[answerArr.value.length - 1] = answer.value
 	}

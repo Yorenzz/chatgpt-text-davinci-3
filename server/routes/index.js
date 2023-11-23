@@ -47,7 +47,7 @@ router.post('/image', async (ctx, next) => {
 			size: '1024x1024',
 		})
 		console.log(response.data)
-		ctx.body = response.data.data[0]
+		ctx.body = response.data[0]
 	} catch (e) {
 		console.warn(e)
 	}
@@ -74,16 +74,7 @@ ws.on('connection', (ws) => {
 	ws.on('message', async (message) => {
 		ws.send('start')
 		try {
-			// const response = await openai.createChatCompletion({
-			// 	model: 'gpt-3.5-turbo',
-			// 	messages: JSON.parse(message),
-			// 	stream: true,
-			// 	temperature: 0.7,
-			// }, {
-			// 	responseType: 'stream',
-			// })
-
-			// const stream = response.data
+			console.log(JSON.parse(message), 'question')
 			const stream = await openai.chat.completions.create({
 				model: 'gpt-3.5-turbo-1106',
 				messages: JSON.parse(message),
@@ -92,34 +83,13 @@ ws.on('connection', (ws) => {
 			})
 
 			for await (const part of stream) {
-				console.log(part.choices[0].delta?.content)
+				console.log(part.choices[0].delta?.content, 'answer')
 				ws.send(part.choices[0].delta?.content)
 			}
 			ws.send('end')
-
-			// stream.on('data', (chunk) => {
-			// 	const payloads = chunk.toString().split('\n\n')
-			// 	for (const payload of payloads) {
-			// 		if (payload.includes('[DONE]')) return
-			// 		if (payload.startsWith('data:')) {
-			// 			const data = payload.replaceAll(/(\n)?^data:\s*/g, '') // in case there's multiline data event
-			// 			try {
-			// 				const delta = JSON.parse(data.trim())
-			// 				console.log(delta.choices[0].delta?.content)
-			// 				ws.send(delta.choices[0].delta?.content)
-			// 			} catch (error) {
-			// 				console.warn(`Error with JSON.parse and ${payload}.\n${error}`)
-			// 			}
-			// 		}
-			// 	}
-			// })
-			// stream.on('end', () => {
-			// 	console.log('Stream done')
-			// 	ws.send('end')
-			// })
-			// stream.on('error', (e) => console.error(e))
 		} catch (e) {
 			console.warn(e)
+			ws.send('error')
 		}
 	})
 })
