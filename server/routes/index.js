@@ -91,27 +91,33 @@ ws.on('connection', (ws) => {
 				temperature: 0.7,
 			})
 
-			stream.on('data', (chunk) => {
-				const payloads = chunk.toString().split('\n\n')
-				for (const payload of payloads) {
-					if (payload.includes('[DONE]')) return
-					if (payload.startsWith('data:')) {
-						const data = payload.replaceAll(/(\n)?^data:\s*/g, '') // in case there's multiline data event
-						try {
-							const delta = JSON.parse(data.trim())
-							console.log(delta.choices[0].delta?.content)
-							ws.send(delta.choices[0].delta?.content)
-						} catch (error) {
-							console.warn(`Error with JSON.parse and ${payload}.\n${error}`)
-						}
-					}
-				}
-			})
-			stream.on('end', () => {
-				console.log('Stream done')
-				ws.send('end')
-			})
-			stream.on('error', (e) => console.error(e))
+			for await (const part of stream) {
+				console.log(part.choices[0].delta?.content)
+				ws.send(part.choices[0].delta?.content)
+			}
+			ws.send('end')
+
+			// stream.on('data', (chunk) => {
+			// 	const payloads = chunk.toString().split('\n\n')
+			// 	for (const payload of payloads) {
+			// 		if (payload.includes('[DONE]')) return
+			// 		if (payload.startsWith('data:')) {
+			// 			const data = payload.replaceAll(/(\n)?^data:\s*/g, '') // in case there's multiline data event
+			// 			try {
+			// 				const delta = JSON.parse(data.trim())
+			// 				console.log(delta.choices[0].delta?.content)
+			// 				ws.send(delta.choices[0].delta?.content)
+			// 			} catch (error) {
+			// 				console.warn(`Error with JSON.parse and ${payload}.\n${error}`)
+			// 			}
+			// 		}
+			// 	}
+			// })
+			// stream.on('end', () => {
+			// 	console.log('Stream done')
+			// 	ws.send('end')
+			// })
+			// stream.on('error', (e) => console.error(e))
 		} catch (e) {
 			console.warn(e)
 		}
