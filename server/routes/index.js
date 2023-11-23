@@ -84,7 +84,7 @@ ws.on('connection', (ws) => {
 			// })
 
 			// const stream = response.data
-			const stream = await openai.completions.create({
+			const stream = await openai.chat.completions.create({
 				model: 'gpt-3.5-turbo-1106',
 				messages: JSON.parse(message),
 				stream: true,
