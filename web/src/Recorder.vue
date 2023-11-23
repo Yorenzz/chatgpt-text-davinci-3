@@ -97,7 +97,7 @@ const uploadRecord = () => {
   // 此处获取到blob对象后需要设置fileName满足当前项目上传需求，其它项目可直接传把blob作为file塞入formData
   const newBlob = new Blob([blob], { type: 'audio/wav' })
   const fileOfBlob = new File([newBlob], new Date().getTime() + '.wav')
-  formData.append('file', blob)
+  formData.append('file', fileOfBlob)
   getRecorderTranslate(formData).then(res=>{
     console.log(res.data)
   }).catch(err=>{

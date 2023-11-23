@@ -1,56 +1,57 @@
 <script setup>
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
 import { marked } from 'marked'
-import { markedHighlight } from "marked-highlight";
+import { escape } from 'lodash'
+import { markedHighlight } from 'marked-highlight'
 import { ElMessage } from 'element-plus'
 
 marked.setOptions({
-  renderer: new marked.Renderer(),
-  gfm: true,
-  tables: true,
-  mangle: false,
-  breaks: true,
-  pedantic: false,
-  sanitize: false,
-  smartLists: true,
-  smartypants: false,
-  headerIds: false,
+	renderer: new marked.Renderer(),
+	gfm: true,
+	tables: true,
+	mangle: false,
+	breaks: true,
+	pedantic: false,
+	sanitize: false,
+	smartLists: true,
+	smartypants: false,
+	headerIds: false,
 })
 marked.use(markedHighlight({
-  langPrefix: 'line-numbers language-',
-  highlight(code, lang) {
-  }
+	langPrefix: 'line-numbers language-',
+	highlight (code, lang) {
+	},
 }))
 
-const loading=ref(false)
-const ans=ref()
-const isEnterDisabled=ref(false)
+const loading = ref(false)
+const ans = ref()
+const isEnterDisabled = ref(false)
 
-const question=ref('')
-const answer=ref('')
-const context=ref([])
-const totalTokens=ref(0)
+const question = ref('')
+const answer = ref('')
+const context = ref([])
+const totalTokens = ref(0)
 
-const questionArr=ref([])
-const answerArr=ref([])
+const questionArr = ref([])
+const answerArr = ref([])
 
-const contentArr=computed(()=>{
-	const arr=[]
-	questionArr.value.map((item,index)=>{
-		arr.push(marked.parse(item||''))
-		arr.push(marked.parse(answerArr.value[index]||''))
+const contentArr = computed(() => {
+	const arr = []
+	questionArr.value.map((item, index) => {
+		arr.push(escape(item || ''))
+		arr.push(marked.parse(escape(answerArr.value[index] || '')))
 		return item
 	})
 	return arr
 })
 
-const ws = new WebSocket(`ws://54.79.221.81:3000`)
+const ws = new WebSocket('ws://54.79.221.81:3000')
 ws.onopen = () => {
 	console.log('opended')
 }
 ws.onerror = (err) => {
-  console.log(err, '链接失败')
-  ElMessage.error('连接失败，请刷新网页重试')
+	console.log(err, '链接失败')
+	ElMessage.error('连接失败，请刷新网页重试')
 }
 ws.onmessage = async (event) => {
 	if (event.data === 'start') {
@@ -62,18 +63,18 @@ ws.onmessage = async (event) => {
 		if (event.data === 'end') {
 			context.value.push({
 				role: 'assistant',
-				content: answer.value
+				content: answer.value,
 			})
 			loading.value = false
-			isEnterDisabled.value=false
+			isEnterDisabled.value = false
 			return
 		}
 		answer.value = answer.value + event.data
 		answerArr.value[answerArr.value.length - 1] = answer.value
 	}
-  nextTick(() => {
-    Prism.highlightAll()
-  })
+	nextTick(() => {
+		Prism.highlightAll()
+	})
 }
 
 const getAIFromStream = async () => {
@@ -85,12 +86,12 @@ const getAIFromStream = async () => {
 	// loading.value = true
 	context.value.push({
 		role: 'user',
-		content: question.value
+		content: question.value,
 	})
 	await nextTick(() => {
 		ans.value.scrollTop = ans.value.scrollHeight
 	})
-	
+
 	question.value = ''
 	const handleSend = () => {
 		if (ws.readyState === WebSocket.OPEN) {
@@ -103,65 +104,64 @@ const getAIFromStream = async () => {
 	handleSend()
 }
 
-const enterGetOpenAI=(e)=>{
-	if(e.keyCode===13){
+const enterGetOpenAI = (e) => {
+	if (e.keyCode === 13) {
 		e.preventDefault()
-		if(!isEnterDisabled.value){
+		if (!isEnterDisabled.value) {
 			getAIFromStream()
 		}
 	}
 }
 
-watch(()=>contentArr.value, (val)=>{
+watch(() => contentArr.value, (val) => {
 	nextTick(() => {
-		ans.value.scrollTop = ans.value.scrollHeight;
-	});
+		ans.value.scrollTop = ans.value.scrollHeight
+	})
 })
 
-onUnmounted(()=>{
+onUnmounted(() => {
 	ws.close()
 })
 </script>
 
 <template>
-	<div class="ask">
-			<div
-				class="top"
-			>
-        使用GPT-3.5-turbo-16k-0613模型
-			</div>
-			<div
-				class="answer scrollbar" ref="ans"
-			>
-				<div
-					v-for="(item,index) in contentArr"
-					:key="index"
-					class="answer-item"
-					:class="[index%2===0?'answer-right':'answer-left']"
-          v-html="item"
-				>
-				</div>
-			</div>
-		<div class="question">
-			<el-input
-				autofocus
-				type="textarea"
-				resize="none"
-				:autosize="{ minRows: 2, maxRows: 3 }"
-				@keydown="enterGetOpenAI"
-				v-model="question"
-				class="input"
-			/>
-			<el-button
-				@click="getAIFromStream"
-				:loading="loading"
-				style="height: 50px"
-			>
-				提问
-			</el-button>
-		</div>
-	</div>
-
+  <div class="ask">
+    <div
+      class="top"
+    >
+      使用GPT-3.5-turbo-16k-0613模型
+    </div>
+    <div
+      ref="ans"
+      class="answer scrollbar"
+    >
+      <div
+        v-for="(item,index) in contentArr"
+        :key="index"
+        class="answer-item"
+        :class="[index%2===0?'answer-right':'answer-left']"
+        v-html="item"
+      />
+    </div>
+    <div class="question">
+      <el-input
+        v-model="question"
+        autofocus
+        type="textarea"
+        resize="none"
+        :autosize="{ minRows: 2, maxRows: 3 }"
+        class="input"
+        @keydown="enterGetOpenAI"
+      />
+      <el-button
+        :loading="loading"
+        style="height: 50px"
+        @click="getAIFromStream"
+      >
+        提问
+      </el-button>
+    </div>
+  </div>
 </template>
 
 <style scoped>
