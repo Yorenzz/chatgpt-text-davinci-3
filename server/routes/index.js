@@ -41,7 +41,7 @@ router.post('/image', async (ctx, next) => {
 	console.log(keyword)
 	try {
 		const response = await openai.images.generate({
-			model: 'dall-e-3',
+			model: 'dall-e-2',
 			prompt: keyword,
 			n: 1,
 			size: '1024x1024',
